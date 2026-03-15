@@ -11,6 +11,9 @@ import java.util.Set;
 
 @WorkInProgress
 public class PowerGrid {
+    private static int currentId = 0;
+
+    public final int id = currentId++;
     public final Set<GridNode> nodes = new HashSet<>();
     public GridNode pivot;
 
@@ -71,10 +74,8 @@ public class PowerGrid {
 
     @Override
     public String toString() {
-        return "PowerGrid{" +
-                "nodes=" + nodes +
-                ", pivot=" + pivot +
-                '}';
+        return "PowerGrid#size=" + nodes.size() + ", pivot=" +
+                (pivot != null ? pivot.getPos() : "null") + ";";
     }
 
     private GridManager manager;

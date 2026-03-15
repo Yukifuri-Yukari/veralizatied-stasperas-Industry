@@ -72,6 +72,6 @@ public class NodeConnection {
 
     @Override
     public String toString() {
-        return "Connection#" + a + "<->" + b + ";";
+        return "Connection#" + a.getPos() + "<->" + b.getPos() + ";";
     }
 }
