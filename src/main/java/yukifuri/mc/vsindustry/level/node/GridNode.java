@@ -38,7 +38,7 @@ public class GridNode {
     }
 
     //region Getters & Setters
-    BlockPos getPos() {
+    public BlockPos getPos() {
         return entity.getBlockPos();
     }
 
@@ -74,5 +74,10 @@ public class GridNode {
 
     public void addConnection(NodeConnection connection) {
         connections.put(connection.direction(), connection);
+    }
+
+    @Override
+    public String toString() {
+        return "GridNode#" + grid + "@" + getPos() + "<->" + connections + ";";
     }
 }

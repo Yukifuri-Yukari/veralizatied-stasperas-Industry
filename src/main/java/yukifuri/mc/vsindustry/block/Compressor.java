@@ -326,5 +326,12 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
             return direction == Direction.DOWN && index == 1;
         }
+
+        private GridNode gridNode;
+        @Override
+        public GridNode getGridNode() {
+            if (gridNode == null) gridNode = GridNode.of(this);
+            return gridNode;
+        }
     }
 }

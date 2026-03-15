@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -21,11 +22,11 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.VSIndustry;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
+import yukifuri.mc.vsindustry.level.grid.GridManager;
 import yukifuri.mc.vsindustry.level.node.GridNode;
 import yukifuri.mc.vsindustry.level.node.Node;
 import yukifuri.mc.vsindustry.registries.VBlocks;
@@ -82,7 +83,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         // direction is the neighbor's direction that is relative to this block
         // if neighbor changes, update state
-        return state.setValue(getProperty(direction), canConnectTo(level, neighborPos));
+        return state.setValue(getProperty(direction), connectable(level, neighborPos));
     }
 
     private BooleanProperty getProperty(Direction direction) {
@@ -96,8 +97,8 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
         };
     }
 
-    private boolean canConnectTo(BlockGetter level, BlockPos neighborPos) {
-        return level.getBlockState(neighborPos).getBlock() instanceof Cable;
+    private boolean connectable(BlockGetter level, BlockPos neighborPos) {
+        return level.getBlockEntity(neighborPos) instanceof BaseBlockEntity;
     }
 
     private VoxelShape calculateShape(BlockState state) {
@@ -120,15 +121,15 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
 
     public BlockState makeConnections(Level level, BlockPos pos) {
         return defaultBlockState()
-                .setValue(NORTH, canConnectTo(level, pos.north()))
-                .setValue(EAST, canConnectTo(level, pos.east()))
-                .setValue(SOUTH, canConnectTo(level, pos.south()))
-                .setValue(WEST, canConnectTo(level, pos.west()))
-                .setValue(UP, canConnectTo(level, pos.above()))
-                .setValue(DOWN, canConnectTo(level, pos.below()));
+                .setValue(NORTH, connectable(level, pos.north()))
+                .setValue(EAST, connectable(level, pos.east()))
+                .setValue(SOUTH, connectable(level, pos.south()))
+                .setValue(WEST, connectable(level, pos.west()))
+                .setValue(UP, connectable(level, pos.above()))
+                .setValue(DOWN, connectable(level, pos.below()));
     }
 
-    private boolean canConnectTo(Level level, BlockPos neighborPos) {
+    private boolean connectable(Level level, BlockPos neighborPos) {
         BlockState state = level.getBlockState(neighborPos);
         return state.getBlock() instanceof Cable;
     }
@@ -136,13 +137,19 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
 
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        // TODO: 2026/3/7 Calling grid reload
+        if (level instanceof ServerLevel serverLevel) {
+            var node = getNode(level, pos);
+            GridManager.get(serverLevel, node).nodeJoined(node);
+        }
     }
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (state.is(newState.getBlock())) return;
-        // TODO: 2026/3/7 Calling grid reload
+        if (level instanceof ServerLevel serverLevel) {
+            var node = getNode(level, pos);
+            GridManager.get(serverLevel, node).nodeRemoved(node);
+        }
     }
 
     @Override @Nullable
@@ -160,6 +167,28 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
 
         public Entity(BlockPos pos, BlockState blockState) {
             super(TYPE, pos, blockState);
+        }
+
+        private GridNode gridNode;
+        @Override
+        public GridNode getGridNode() {
+            if (gridNode == null) gridNode = GridNode.of(this);
+            return gridNode;
+        }
+
+        @Override
+        public void onChunkUnload() {
+            VSIndustry.LOGGER.info("[Cable] Chunk unloaded but we do not update status to grid {}", this);
+        }
+
+        @Override
+        protected void onFirstTick(ServerLevel level) {
+            VSIndustry.LOGGER.info("[Cable] First tick {}", this);
+        }
+
+        @Override
+        public String toString() {
+            return getGridNode().toString();
         }
     }
 }
