@@ -28,6 +28,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
 import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
+import yukifuri.mc.vsindustry.level.node.GridNode;
+import yukifuri.mc.vsindustry.level.node.Node;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
@@ -186,7 +188,7 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         return (Compressor.Entity) level.getBlockEntity(pos);
     }
 
-    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer {
+    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, Node {
         public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
                 .create(Entity::new, VBlocks.COMPRESSOR)
                 .build();

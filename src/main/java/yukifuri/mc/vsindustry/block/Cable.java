@@ -26,6 +26,8 @@ import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.VSIndustry;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
+import yukifuri.mc.vsindustry.level.node.GridNode;
+import yukifuri.mc.vsindustry.level.node.Node;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 
 @MethodsReturnNonnullByDefault
@@ -151,7 +153,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, Entity entity) { }
 
-    public static class Entity extends BaseBlockEntity {
+    public static class Entity extends BaseBlockEntity implements Node {
         public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
                 .create(Entity::new, VBlocks.CABLE)
                 .build();
