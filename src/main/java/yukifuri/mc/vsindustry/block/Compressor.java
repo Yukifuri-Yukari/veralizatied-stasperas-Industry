@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
 import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
 import yukifuri.mc.vsindustry.level.node.GridNode;
@@ -35,7 +36,7 @@ import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
 
 @MethodsReturnNonnullByDefault
-public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> implements WorldlyContainerHolder {
+public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> implements WorldlyContainerHolder, Connectable {
     public static final String NBT_PROGRESS = "Progress";
     public static final String NBT_COALS_COUNT = "CoalsCount";
     public static final String NBT_COALS = "Coals";

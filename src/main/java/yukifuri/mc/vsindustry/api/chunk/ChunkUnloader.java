@@ -1,6 +1,5 @@
 package yukifuri.mc.vsindustry.api.chunk;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -12,11 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChunkUnloader {
-    public static void register() {
-        ServerChunkEvents.CHUNK_UNLOAD.register(ChunkUnloader::onChunkUnload);
-    }
-
-    private static void onChunkUnload(ServerLevel level, LevelChunk chunk) {
+    public static void onChunkUnload(ServerLevel level, LevelChunk chunk) {
         List<BaseBlockEntity> entitiesToRemove = new ArrayList<>();
 
         for (BlockEntity be : chunk.getBlockEntities().values()) {

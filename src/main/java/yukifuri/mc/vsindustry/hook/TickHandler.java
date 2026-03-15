@@ -27,15 +27,11 @@ public class TickHandler {
     private final Map<ResourceKey<Level>, List<LevelTicker>> persistentTickers = new HashMap<>();
 
     public void init() {
-        ServerChunkEvents.CHUNK_UNLOAD.register(this::onChunkUnload);
         ServerTickEvents.START_WORLD_TICK.register(this::startWorldTick);
+        ServerChunkEvents.CHUNK_UNLOAD.register(ChunkUnloader::onChunkUnload);
 
         // Release data to let gc collect it.
         ServerLifecycleEvents.SERVER_STOPPED.register(s -> clearAll());
-    }
-
-    public void trigListeners() {
-        ChunkUnloader.register();
     }
 
     private void startWorldTick(ServerLevel level) {
@@ -48,15 +44,18 @@ public class TickHandler {
         }
 
         // First-tick Tickers
-        var ready = firstTickQueue.remove(key);
+        var ready = firstTickQueue.get(key);
         if (ready != null) {
-            ready.forEach(r -> {
+            int budget = 64;
+            while (budget-- > 0 && !ready.isEmpty()) {
+                var r = ready.poll();
                 try {
                     r.run();
                 } catch (Exception e) {
-                    VSIndustry.LOGGER.error("firstTick 初始化时发生异常，世界: {}", key.location(), e);
+                    VSIndustry.LOGGER.error("firstTick exception in initialization {}", key.location(), e);
                 }
-            });
+            }
+            if (ready.isEmpty()) firstTickQueue.remove(key);
         }
 
         // Persistent Tickers
@@ -70,12 +69,12 @@ public class TickHandler {
         try {
             ticker.run(level);
         } catch (Exception e) {
-            VSIndustry.LOGGER.error("ticker 执行时发生异常，世界: {}", level.dimension().location(), e);
+            VSIndustry.LOGGER.error("ticker exception in {}", level.dimension().location(), e);
         }
     }
 
     private void onChunkUnload(ServerLevel level, LevelChunk chunk) {
-        // Chunk Unloader has processed this.
+        /// Chunk Unloader has processed this.
         /// {@link ChunkUnloader}
     }
 
@@ -104,6 +103,15 @@ public class TickHandler {
         persistentTickers.computeIfAbsent(level.dimension(), k -> new ArrayList<>())
                 .add(ticker);
     }
+
+    /**
+     * Removes a persistent ticker.
+     */
+    public void removePersistentTicker(ServerLevel level, LevelTicker ticker) {
+        var list = persistentTickers.get(level.dimension());
+        if (list != null) list.remove(ticker);
+    }
+
     /**
      * Clear all tickers.
      */

@@ -25,6 +25,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.VSIndustry;
+import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
 import yukifuri.mc.vsindustry.level.grid.GridManager;
@@ -33,7 +34,7 @@ import yukifuri.mc.vsindustry.level.node.Node;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 
 @MethodsReturnNonnullByDefault
-public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
+public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connectable {
     private final LoadingCache<BlockState, VoxelShape> SHAPE_CACHE = CacheBuilder.newBuilder()
             .maximumSize(128)
             .build(CacheLoader.from(this::calculateShape));
@@ -81,7 +82,11 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+    public BlockState updateShape(
+            BlockState state, Direction direction,
+            BlockState neighborState, LevelAccessor level,
+            BlockPos pos, BlockPos neighborPos
+    ) {
         // direction is the neighbor's direction that is relative to this block
         // if neighbor changes, update state
         return state.setValue(getProperty(direction), connectable(level, neighborPos));
@@ -96,10 +101,6 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
             case WEST -> WEST;
             case EAST -> EAST;
         };
-    }
-
-    private boolean connectable(BlockGetter level, BlockPos neighborPos) {
-        return level.getBlockEntity(neighborPos) instanceof BaseBlockEntity;
     }
 
     private VoxelShape calculateShape(BlockState state) {
@@ -130,9 +131,9 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> {
                 .setValue(DOWN, connectable(level, pos.below()));
     }
 
-    private boolean connectable(Level level, BlockPos neighborPos) {
+    private boolean connectable(LevelAccessor level, BlockPos neighborPos) {
         BlockState state = level.getBlockState(neighborPos);
-        return state.getBlock() instanceof Cable;
+        return state.getBlock() instanceof Connectable;
     }
     //endregion
 

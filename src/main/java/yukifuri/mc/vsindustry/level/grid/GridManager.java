@@ -6,6 +6,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import yukifuri.mc.vsindustry.VSIndustry;
+import yukifuri.mc.vsindustry.hook.TickHandler;
 import yukifuri.mc.vsindustry.level.node.GridNode;
 
 import java.util.*;
@@ -36,6 +38,7 @@ public class GridManager {
 
     public GridManager(ServerLevel level) {
         this.level = level;
+        TickHandler.getInstance().registerPersistentTicker(level, this::tick);
     }
 
     /// Must be called after no pairs in gridsByPos, use {@link GridManager#remove(GridNode)}
@@ -112,5 +115,12 @@ public class GridManager {
         PowerGrid grid = new PowerGrid(pivot);
         grids.add(grid);
         return grid;
+    }
+
+    private void tick(Level _unused) {
+        VSIndustry.LOGGER.info("[PowerGrid] Tick {} {}", level, _unused);
+        for (var grid : List.copyOf(grids)) {
+            grid.tick(level);
+        }
     }
 }
