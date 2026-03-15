@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import yukifuri.mc.vsindustry.hook.TickHandler;
 import yukifuri.mc.vsindustry.level.grid.GridManager;
 import yukifuri.mc.vsindustry.level.node.Node;
@@ -28,8 +29,9 @@ public abstract class BaseBlockEntity extends BlockEntity {
     public void powerAccepted(long power) {}
 
     public void scheduleInit() {
-        var level = (ServerLevel) getLevel();
-        if (level == null) return;
+        if (level == null || level.isClientSide())
+            return;
+        ServerLevel level = (ServerLevel) getLevel();
         TickHandler.getInstance().scheduleOnFirstTick(level, () -> onFirstTick(level));
     }
 

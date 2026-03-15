@@ -72,9 +72,6 @@ public class NodeConnection {
 
     @Override
     public String toString() {
-        return "NodeConnection[" +
-                "direction=" + direction + ", " +
-                "a=" + a + ", " +
-                "b=" + b + ']';
+        return "Connection#" + a + "<->" + b + ";";
     }
 }

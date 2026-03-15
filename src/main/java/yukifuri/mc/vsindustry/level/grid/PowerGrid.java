@@ -44,8 +44,30 @@ public class PowerGrid {
         }
     }
 
-    // TODO: 2026/3/14
+    public void tick(ServerLevel level) {
+        long totalSupply = 0;
+        long totalDemand = 0;
 
+        for (GridNode node : nodes) {
+            var entity = node.getOwner();
+            totalSupply += entity.powerSupplied();
+            totalDemand += entity.expectedPower();
+        }
+
+        if (totalDemand == 0) return;
+
+        long ratio = Math.min(1000L, totalSupply * 1000L / totalDemand);
+
+        for (GridNode node : nodes) {
+            var entity = node.getOwner();
+            long demand = entity.expectedPower();
+            if (demand <= 0) continue;
+            long allocated = demand * ratio / 1000L;
+            entity.powerAccepted(allocated);
+        }
+
+        VSIndustry.LOGGER.info("[PowerGrid] Ratio: {}, Supply: {}, Demand: {}, Allocated: {}", ratio, totalSupply, totalDemand, totalSupply * ratio / 1000L);
+    }
 
     @Override
     public String toString() {
