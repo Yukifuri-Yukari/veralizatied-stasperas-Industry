@@ -29,6 +29,7 @@ public class GridNode {
     private final BaseBlockEntity entity;
     private final Map<Direction, NodeConnection>
             connections = new HashMap<>();
+    private boolean isOnline = true;
 
     private GridNode(
             BaseBlockEntity entity
@@ -58,6 +59,13 @@ public class GridNode {
     public BaseBlockEntity getOwner() {
         return entity;
     }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void offline() { isOnline = false; }
+    public void online() { isOnline = true; }
     //endregion
 
     public boolean hasConnections() {

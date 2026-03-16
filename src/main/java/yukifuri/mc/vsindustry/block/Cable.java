@@ -141,7 +141,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (level instanceof ServerLevel serverLevel) {
             var node = getNode(level, pos);
-            GridManager.get(serverLevel, node).nodeJoined(node);
+            GridManager.get(serverLevel).nodeJoined(node);
         }
     }
 
@@ -150,7 +150,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
         if (state.is(newState.getBlock())) return;
         if (level instanceof ServerLevel serverLevel) {
             var node = getNode(level, pos);
-            GridManager.get(serverLevel, node).nodeRemoved(node);
+            GridManager.get(serverLevel).nodeRemoved(node);
         }
     }
 
@@ -185,12 +185,20 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
 
         @Override
         public void onChunkUnload() {
-            VSIndustry.LOGGER.info("[Cable] Chunk unloaded but we do not update status to grid {}", this);
+            /// 标记节点离线, 不触发网格分裂, 等区块重新加载时恢复
+            getGridNode().offline();
         }
 
         @Override
         protected void onFirstTick(ServerLevel level) {
-            VSIndustry.LOGGER.info("[Cable] First tick {}", this);
+            var node = getGridNode();
+            if (node.getGrid() == null) {
+                /// 节点还没有网格, 正常加入 Node has no grids, join
+                GridManager.get(level).nodeJoined(node);
+            } else {
+                /// 节点已有网格, 直接标记回在线 Node has grids, online
+                node.online();
+            }
         }
 
         @Override

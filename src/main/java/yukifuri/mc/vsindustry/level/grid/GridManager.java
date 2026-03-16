@@ -31,7 +31,6 @@ public class GridManager {
     }
 
     // region Node management
-
     public void addNode(GridNode node) {
         nodesByPos.put(node.getPos(), node);
     }
@@ -44,11 +43,9 @@ public class GridManager {
     public GridNode getNodeAt(BlockPos pos) {
         return nodesByPos.get(pos);
     }
-
     //endregion
 
     //region Grid management
-
     public void addGrid(PowerGrid grid) {
         grids.add(grid);
     }
@@ -56,11 +53,9 @@ public class GridManager {
     public void removeGrid(PowerGrid grid) {
         grids.remove(grid);
     }
-
     //endregion
 
     //region Topology queries
-
     /**
      * Returns connected neighbor nodes of the given node.
      */
@@ -86,11 +81,9 @@ public class GridManager {
         }
         return null;
     }
-
     //endregion
 
     //region Node join / leave
-
     /**
      * Called when a node is placed into the world.
      * Joins an existing neighboring grid, or creates a new one.
@@ -140,8 +133,7 @@ public class GridManager {
         // 检查移除后网格是否需要分裂
         split(grid);
     }
-
-    // endregion
+    //endregion
 
     //region Merge / Split
     /**

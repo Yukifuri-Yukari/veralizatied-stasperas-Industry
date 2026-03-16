@@ -61,6 +61,7 @@ public class PowerGrid {
         long ratio = Math.min(1000L, totalSupply * 1000L / totalDemand);
 
         for (GridNode node : nodeSet) {
+            if (!node.isOnline()) continue;
             var entity = node.getOwner();
             long demand = entity.expectedPower();
             if (demand <= 0) continue;
