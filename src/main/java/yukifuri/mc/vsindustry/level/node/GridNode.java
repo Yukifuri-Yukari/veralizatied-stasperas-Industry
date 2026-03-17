@@ -83,11 +83,17 @@ public class GridNode {
     public void addConnection(NodeConnection connection) {
         connections.put(connection.direction(), connection);
     }
+
     @Override
     public String toString() {
         String gridId = grid != null
                 ? "" + grid.id
                 : "null";
         return "GridNode#PowerGrid(serial=" + gridId + ")@" + getPos() + "<->" + connections + ";";
+    }
+
+    @Override
+    public int hashCode() {
+        return getPos().hashCode();
     }
 }

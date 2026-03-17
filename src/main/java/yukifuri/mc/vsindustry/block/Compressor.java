@@ -360,6 +360,10 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
             defaultOnFirstTick(level);
         }
 
+        protected void onRemoved(ServerLevel level) {
+            defaultOnRemoved(level);
+        }
+
         public void onChunkUnload() {
             defaultOnChunkUnload();
         }

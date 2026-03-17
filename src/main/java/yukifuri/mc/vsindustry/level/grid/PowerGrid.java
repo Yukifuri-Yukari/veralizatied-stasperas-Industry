@@ -29,10 +29,8 @@ public class PowerGrid {
     }
 
     public void setNodes(Set<GridNode> nodes) {
-        // 先清除旧归属
         for (GridNode n : nodeSet) n.setGrid(null);
         nodeSet.clear();
-        // 设置新归属
         for (GridNode n : nodes) {
             nodeSet.add(n);
             n.setGrid(this);

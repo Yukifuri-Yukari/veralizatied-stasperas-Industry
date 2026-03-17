@@ -58,7 +58,7 @@ public class CompressorUi extends UI<CompressorUi> {
             originalInput = input.getItem();
             originalOutput = output.getItem();
             NetworkProcessor.getInstance().sendToClient(
-                    new SyncGuiDataPacket(containerId, (buf) -> buf
+                    new SyncGuiDataPacket(containerId, buf -> buf
                             .writeItem(input.getItem())
                             .writeItem(output.getItem())
                     ), inv.player

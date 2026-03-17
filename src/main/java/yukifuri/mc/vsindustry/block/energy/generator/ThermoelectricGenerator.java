@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -14,10 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -34,6 +31,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
@@ -85,6 +83,17 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
     @Override
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
         return (Entity) level.getBlockEntity(pos);
+    }
+
+    @Override
+    public InteractionResult use(
+            BlockState state, Level level, BlockPos pos,
+            Player player, InteractionHand hand, BlockHitResult hit
+    ) {
+        if (level.isClientSide) return InteractionResult.PASS;
+        player.openMenu((Entity) level.getBlockEntity(pos));
+
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -259,6 +268,10 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
 
         protected void onFirstTick(ServerLevel level) {
             defaultOnFirstTick(level);
+        }
+
+        protected void onRemoved(ServerLevel level) {
+            defaultOnRemoved(level);
         }
 
         public void onChunkUnload() {

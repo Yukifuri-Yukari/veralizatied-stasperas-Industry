@@ -26,7 +26,6 @@ import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
-import yukifuri.mc.vsindustry.level.grid.GridManager;
 import yukifuri.mc.vsindustry.level.node.GridNode;
 import yukifuri.mc.vsindustry.level.node.Node;
 import yukifuri.mc.vsindustry.registries.VBlocks;
@@ -135,22 +134,6 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
     }
     //endregion
 
-    @Override
-    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (level instanceof ServerLevel serverLevel) {
-            var node = getNode(level, pos);
-            GridManager.get(serverLevel).nodeJoined(node);
-        }
-    }
-
-    @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (state.is(newState.getBlock())) return;
-        if (level instanceof ServerLevel serverLevel) {
-            var node = getNode(level, pos);
-            GridManager.get(serverLevel).nodeRemoved(node);
-        }
-    }
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
@@ -182,7 +165,8 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
         }
 
 
-        protected void onFirstTick(ServerLevel level) { defaultOnFirstTick(level);}
+        protected void onFirstTick(ServerLevel level) { defaultOnFirstTick(level); }
+        protected void onRemoved(ServerLevel level) { defaultOnRemoved(level); }
         public void onChunkUnload() { defaultOnChunkUnload(); }
 
         @Override

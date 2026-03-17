@@ -16,4 +16,8 @@ public interface DefaultNode extends Node {
     default void defaultOnChunkUnload() {
         getGridNode().offline();
     }
+
+    default void defaultOnRemoved(ServerLevel level) {
+        GridManager.get(level).nodeRemoved(getGridNode());
+    }
 }
