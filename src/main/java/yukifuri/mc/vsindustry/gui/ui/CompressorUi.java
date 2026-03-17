@@ -6,6 +6,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -27,26 +28,25 @@ public class CompressorUi extends UI<CompressorUi> {
     public final Slot input;
     public final Slot output;
 
-    public final ContainerData progress;
+    public final ContainerData data;
 
-    public CompressorUi(int syncId, Inventory inventory, Container c, ContainerData progress) {
+    public CompressorUi(int syncId, Inventory inventory, Container c, ContainerData dataC) {
         super(TYPE, TITLE, inventory, syncId);
         container = c;
         input = new Slot(container, 0, 33, 37);
         output = new ResultSlot(inv.player, container, 1, 112, 37);
-        this.progress = progress;
+        data = dataC;
         init();
     }
 
     public CompressorUi(int syncId, Inventory inventory) {
-        this(syncId, inventory, new SimpleContainer(2), new SimpleContainerData(1));
+        this(syncId, inventory, new SimpleContainer(2), new SimpleContainerData(3));
     }
 
     @Override
     public void init() {
         addInventorySlots(inv);
         addSlots(input, output);
-        addDataSlots(progress);
         originalInput = input.getItem();
         originalOutput = output.getItem();
     }
@@ -113,14 +113,11 @@ public class CompressorUi extends UI<CompressorUi> {
         return itemStack;
     }
 
-
     static class ResultSlot extends Slot {
-        private final Player player;
         private int removeCount;
 
         public ResultSlot(Player player, Container container, int i, int j, int k) {
             super(container, i, j, k);
-            this.player = player;
         }
 
         @Override

@@ -30,7 +30,7 @@ public class TickHandler {
         ServerTickEvents.START_WORLD_TICK.register(this::startWorldTick);
         ServerChunkEvents.CHUNK_UNLOAD.register(ChunkUnloader::onChunkUnload);
 
-        // Release data to let gc collect it.
+        // Release to let gc collect it.
         ServerLifecycleEvents.SERVER_STOPPED.register(s -> clearAll());
     }
 

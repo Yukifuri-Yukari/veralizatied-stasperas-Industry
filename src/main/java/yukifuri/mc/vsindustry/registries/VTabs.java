@@ -13,7 +13,9 @@ public class VTabs {
             .icon(Items.ACACIA_BUTTON::getDefaultInstance)
             .title(Component.literal("tab." + VSIndustry.MOD_ID + ".tab"))
             .displayItems((param, output) -> {
-                output.accept(VBlocks.COMPRESSOR.asItem().getDefaultInstance());
+                output.accept(VBlocks.COMPRESSOR.asItem());
+                output.accept(VBlocks.CABLE.asItem());
+                output.accept(VBlocks.THERMOELECTRIC_GENERATOR.asItem());
             })
             .build();
 

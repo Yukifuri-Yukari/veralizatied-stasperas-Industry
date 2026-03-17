@@ -16,17 +16,15 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
-import yukifuri.mc.vsindustry.VSIndustry;
 import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
+import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
 import yukifuri.mc.vsindustry.level.grid.GridManager;
 import yukifuri.mc.vsindustry.level.node.GridNode;
@@ -167,7 +165,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, Entity entity) { }
 
-    public static class Entity extends BaseBlockEntity implements Node {
+    public static class Entity extends BaseBlockEntity implements DefaultNode {
         public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
                 .create(Entity::new, VBlocks.CABLE)
                 .build();
@@ -183,23 +181,9 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
             return gridNode;
         }
 
-        @Override
-        public void onChunkUnload() {
-            /// 标记节点离线, 不触发网格分裂, 等区块重新加载时恢复
-            getGridNode().offline();
-        }
 
-        @Override
-        protected void onFirstTick(ServerLevel level) {
-            var node = getGridNode();
-            if (node.getGrid() == null) {
-                /// 节点还没有网格, 正常加入 Node has no grids, join
-                GridManager.get(level).nodeJoined(node);
-            } else {
-                /// 节点已有网格, 直接标记回在线 Node has grids, online
-                node.online();
-            }
-        }
+        protected void onFirstTick(ServerLevel level) { defaultOnFirstTick(level);}
+        public void onChunkUnload() { defaultOnChunkUnload(); }
 
         @Override
         public String toString() {

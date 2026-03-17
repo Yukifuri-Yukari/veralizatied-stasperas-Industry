@@ -34,6 +34,8 @@ import static yukifuri.mc.vsindustry.util.Math.doubleHash;
  */
 @MethodsReturnNonnullByDefault
 public abstract class UI<T extends UI<T>> extends AbstractContainerMenu {
+    public static final int[] SLOTS_FOR_NOTHING = new int[0];
+
     protected final Component title;
     protected final UIType<T> type;
     protected final Inventory inv;

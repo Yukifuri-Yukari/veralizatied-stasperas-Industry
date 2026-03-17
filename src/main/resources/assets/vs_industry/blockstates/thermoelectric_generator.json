@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "vs_industry:block/thermoelectric_generator"
+    },
+    "facing=east": {
+      "model": "vs_industry:block/thermoelectric_generator",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "vs_industry:block/thermoelectric_generator",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "vs_industry:block/thermoelectric_generator",
+      "y": 270
+    }
+  }
+}

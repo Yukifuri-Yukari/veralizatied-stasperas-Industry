@@ -6,8 +6,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import yukifuri.mc.vsindustry.VSIndustry;
 import yukifuri.mc.vsindustry.hook.TickHandler;
 import yukifuri.mc.vsindustry.level.node.GridNode;
+import yukifuri.mc.vsindustry.level.node.NodeConnection;
 
 import java.util.*;
 
@@ -92,6 +94,17 @@ public class GridManager {
     public void nodeJoined(GridNode node) {
         addNode(node);
 
+        /// 建立双向连接：遍历六个方向，找到已存在的邻居节点
+        for (Direction dir : Direction.values()) {
+            GridNode neighbor = nodesByPos.get(node.getPos().relative(dir));
+            if (neighbor == null) continue;
+
+            /// 创建一条连接，A→B 方向是 dir，B→A 方向是 dir.getOpposite()
+            NodeConnection conn = NodeConnection.of(dir, node, neighbor);
+            node.addConnection(conn);
+            neighbor.addConnection(conn);  // 同一个 NodeConnection 对象双方共享
+        }
+
         Set<PowerGrid> neighborGrids = new HashSet<>();
         for (Direction dir : Direction.values()) {
             var neighbor = nodesByPos.get(node.getPos().relative(dir));
@@ -111,6 +124,7 @@ public class GridManager {
             // 多个网格需要合并
             merge(neighborGrids, node);
         }
+        VSIndustry.LOGGER.info("[Grid {}] Node Joined: {}", node.getGrid(), node);
     }
 
     /**
@@ -118,7 +132,16 @@ public class GridManager {
      * Removes it from its grid, then checks if the grid needs to be split.
      */
     public void nodeRemoved(GridNode node) {
+        VSIndustry.LOGGER.info("[Grid {}] Node Removed: {}", node.getGrid(), node);
         removeNode(node);
+
+        /// 断开双向连接：通知每个邻居移除指向该节点的连接
+        for (NodeConnection conn : node.getConnections().values()) {
+            GridNode neighbor = conn.getOtherSide(node);
+            neighbor.getConnections().remove(conn.getDirection(neighbor));
+        }
+        /// 清空自身的连接表
+        node.getConnections().clear();
 
         var grid = node.getGrid();
         if (grid == null) return;
@@ -205,6 +228,7 @@ public class GridManager {
 
     private void tick(Level _unused) {
         for (var grid : List.copyOf(grids)) {
+            VSIndustry.LOGGER.info("[GridManager] Ticking {}", grid);
             grid.tick(level);
         }
     }

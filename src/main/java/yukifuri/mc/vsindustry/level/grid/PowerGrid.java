@@ -1,6 +1,7 @@
 package yukifuri.mc.vsindustry.level.grid;
 
 import net.minecraft.server.level.ServerLevel;
+import yukifuri.mc.vsindustry.VSIndustry;
 import yukifuri.mc.vsindustry.level.node.GridNode;
 
 import java.util.HashSet;
@@ -56,6 +57,7 @@ public class PowerGrid {
             totalDemand += entity.expectedPower();
         }
 
+        VSIndustry.LOGGER.info("[PowerGrid] {} Ticked complete. Supply {} Demand {}", this, totalSupply, totalDemand);
         if (totalDemand == 0) return;
 
         long ratio = Math.min(1000L, totalSupply * 1000L / totalDemand);

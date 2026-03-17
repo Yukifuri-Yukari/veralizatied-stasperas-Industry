@@ -1,0 +1,269 @@
+package yukifuri.mc.vsindustry.block.energy.generator;
+
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
+import yukifuri.mc.vsindustry.api.level.block.Connectable;
+import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
+import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
+import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
+import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
+import yukifuri.mc.vsindustry.gui.ui.energy.generator.ThermoelectricUi;
+import yukifuri.mc.vsindustry.level.node.GridNode;
+import yukifuri.mc.vsindustry.registries.VBlocks;
+import yukifuri.mc.vsindustry.tags.ThermoelectricFuelTags;
+import yukifuri.mc.vsindustry.util.Power;
+
+import static yukifuri.mc.vsindustry.gui.api.UI.SLOTS_FOR_NOTHING;
+
+@MethodsReturnNonnullByDefault
+public class ThermoelectricGenerator extends SimpleBlockWithEntity<ThermoelectricGenerator.Entity> implements WorldlyContainerHolder, Connectable {
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+
+    public ThermoelectricGenerator() {
+        super(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+        builder.add(FACING);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new Entity(pos, state);
+    }
+
+    @Override
+    public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        return (Entity) level.getBlockEntity(pos);
+    }
+
+    @Override
+    public void tick(Level level, BlockPos pos, BlockState state, Entity entity) {
+        if (entity.getProgress() != 0) return; // Last fuel does not burn completely
+
+        var is = entity.getItem(0);
+        int burnTime;
+
+        if (is.is(ThermoelectricFuelTags.TAG)) {
+            burnTime = 400; // 20s
+        } else {
+            burnTime = AbstractFurnaceBlockEntity.getFuel().getOrDefault(is.getItem(), 0);
+        }
+
+        if (burnTime == 0) return; // Do not put unburnable items!
+        if (entity.getProgress() >= Entity.MAX_PROGRESS) {
+            // Progress Bar is full
+            entity.setProgress(Entity.MAX_PROGRESS);
+            return;
+        }
+
+        is.shrink(1);
+        int gain = burnTime / 20;
+        if (entity.getPower() < Entity.MAX_POWER) {
+            gain = gain * 2 / 3;
+            entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 30));
+        }
+        entity.setProgress(entity.getProgress() + gain);
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, BlockEntityType<T> type
+    ) {
+        return level.isClientSide ? null :
+                (level1, pos, state1, entity) -> tick(level1, pos, state1, (Entity) entity);
+    }
+
+    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, DefaultNode {
+        public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
+                .create(Entity::new, VBlocks.THERMOELECTRIC_GENERATOR)
+                .build();
+
+        public static final int[]
+                SLOTS_FOR_UP = new int[]{0};
+
+        public static final int MAX_PROGRESS = 200;
+        public static final int MAX_POWER = 2000000;
+
+        public final SimpleContainer container = new SimpleContainer(1);
+        public final ContainerData data = new SimpleContainerData(3);
+
+        public Entity(BlockPos pos, BlockState state) {
+            this(pos, state, 0, 0L);
+        }
+
+        public Entity(BlockPos pos, BlockState state, int progress, long power) {
+            super(TYPE, pos, state);
+            setProgress(progress);
+            setPower(power);
+        }
+
+        //region NBT
+        private static final String NBT_PROGRESS = "Progress";
+        private static final String NBT_POWER = "Power";
+        private static final String NBT_FUEL = "Fuel";
+
+        @Override
+        protected void saveAdditional(CompoundTag tag) {
+            super.saveAdditional(tag);
+            if (getProgress() > 0) tag.putInt(NBT_PROGRESS, getProgress());
+            if (getPower() > 0) tag.putLong(NBT_POWER, getPower());
+            var fuel = container.getItem(0);
+            if (!fuel.isEmpty()) tag.put(NBT_FUEL, fuel.save(new CompoundTag()));
+        }
+
+        @Override
+        public void load(CompoundTag tag) {
+            super.load(tag);
+            setProgress(tag.contains(NBT_PROGRESS) ? tag.getInt(NBT_PROGRESS) : 0);
+            setPower(tag.contains(NBT_POWER) ? tag.getLong(NBT_POWER) : 0L);
+            container.setItem(0, tag.contains(NBT_FUEL) ? ItemStack.of(tag.getCompound(NBT_FUEL)) : ItemStack.EMPTY);
+        }
+        //endregion
+
+        //region Power
+        @Override
+        public long expectedPower() {
+            return 0;
+        }
+
+        @Override
+        public long powerSupplied() {
+            if (getProgress() > 0) {
+                setProgress(getProgress() - 1);
+                return 100; // 100 Power Per Tick
+            } else if (getPower() > 100) {
+                setPower(getPower() - 100);
+                return 100;
+            }
+            return 0;
+        }
+        //endregion
+
+        //region Container
+        @Override
+        protected Component getDefaultName() {
+            return ThermoelectricUi.TITLE;
+        }
+
+        @Override
+        protected AbstractContainerMenu createMenu(int containerId, Inventory inventory) {
+            return new ThermoelectricUi(containerId, inventory);
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            return true;
+        }
+
+        @Override
+        public Container getContainer() {
+            return container;
+        }
+
+        @Override
+        public int[] getSlotsForFace(Direction side) {
+            return side == Direction.UP ? SLOTS_FOR_UP : SLOTS_FOR_NOTHING;
+        }
+
+        @Override
+        public boolean canPlaceItemThroughFace(int index, ItemStack itemStack, @Nullable Direction direction) {
+            return index == 0;
+        }
+
+        @Override
+        public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
+            return direction == Direction.DOWN && index == 0 && stack.is(Items.BUCKET);
+        }
+
+        public int getProgress() {
+            return data.get(0);
+        }
+
+        public void setProgress(int progress) {
+            data.set(0, progress);
+        }
+
+        public long getPower() {
+            return Power.from(data, 1);
+        }
+
+        public void setPower(long power) {
+            Power.to(data, power, 1);
+        }
+        //endregion
+
+        //region Grid
+        private GridNode gridNode;
+
+        @Override
+        public GridNode getGridNode() {
+            if (gridNode == null) gridNode = GridNode.of(this);
+            return gridNode;
+        }
+
+        protected void onFirstTick(ServerLevel level) {
+            defaultOnFirstTick(level);
+        }
+
+        public void onChunkUnload() {
+            defaultOnChunkUnload();
+        }
+        //endregion
+    }
+}

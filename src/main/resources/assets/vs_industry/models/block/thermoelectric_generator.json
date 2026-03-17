@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "vs_industry:block/compressor/front",
+    "side": "iron_block",
+    "top": "acacia_planks"
+  }
+}

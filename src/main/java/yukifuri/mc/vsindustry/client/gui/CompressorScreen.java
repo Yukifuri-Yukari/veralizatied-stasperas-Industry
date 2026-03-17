@@ -8,6 +8,9 @@ import net.minecraft.world.entity.player.Inventory;
 import yukifuri.mc.vsindustry.gui.api.UI;
 import yukifuri.mc.vsindustry.gui.api.UIScreen;
 import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
+import yukifuri.mc.vsindustry.util.Power;
+
+import static yukifuri.mc.vsindustry.block.Compressor.Entity.MAX_POWER;
 
 public class CompressorScreen extends UIScreen<CompressorUi> {
     public static final ResourceLocation TEXTURE =
@@ -15,10 +18,6 @@ public class CompressorScreen extends UIScreen<CompressorUi> {
 
     public CompressorScreen(CompressorUi ui, Inventory inventory, Component title) {
         super(ui, inventory, title);
-    }
-
-    public CompressorScreen(UI<CompressorUi> ui, Inventory inventory, Component title) {
-        this((CompressorUi) ui, inventory, title);
     }
 
     private int x;
@@ -31,12 +30,13 @@ public class CompressorScreen extends UIScreen<CompressorUi> {
 
         renderBackground(graphics);
         super.render(graphics, mx, my, delta);
+        graphics.drawString(font, Power.from(ui.data, 1) + " / " + MAX_POWER + " 10(E/T)", x, y + 16, 0xFFFFFFFF);
     }
 
     @Override
     protected void renderBg(GuiGraphics graphics, float delta, int mx, int my) {
         RenderSystem.enableBlend();
-        graphics.blit(TEXTURE, x + 57, y + 37, 176, 0, 5 * ui.progress.get(0), 14);
+        graphics.blit(TEXTURE, x + 57, y + 37, 176, 0, 5 * ui.data.get(0) /* Progress */, 14);
         RenderSystem.disableBlend();
     }
 
