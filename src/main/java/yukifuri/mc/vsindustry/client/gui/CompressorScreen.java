@@ -5,7 +5,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import yukifuri.mc.vsindustry.gui.api.UI;
 import yukifuri.mc.vsindustry.gui.api.UIScreen;
 import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
 import yukifuri.mc.vsindustry.util.Power;
@@ -20,8 +19,7 @@ public class CompressorScreen extends UIScreen<CompressorUi> {
         super(ui, inventory, title);
     }
 
-    private int x;
-    private int y;
+    private int x, y;
 
     @Override
     public void render(GuiGraphics graphics, int mx, int my, float delta) {
@@ -36,7 +34,7 @@ public class CompressorScreen extends UIScreen<CompressorUi> {
     @Override
     protected void renderBg(GuiGraphics graphics, float delta, int mx, int my) {
         RenderSystem.enableBlend();
-        graphics.blit(TEXTURE, x + 57, y + 37, 176, 0, 5 * ui.data.get(0) /* Progress */, 14);
+        graphics.blit(TEXTURE, x + 57, y + 37, 176, 0, ui.data.get(0) * 50 / 15, 14);
         RenderSystem.disableBlend();
     }
 

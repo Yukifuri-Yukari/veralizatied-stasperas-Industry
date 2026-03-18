@@ -46,11 +46,7 @@ import static yukifuri.mc.vsindustry.gui.api.UI.SLOTS_FOR_NOTHING;
 public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> implements WorldlyContainerHolder, Connectable {
     public static final String
             NBT_PROGRESS = "Progress",
-            NBT_COALS_COUNT = "CoalsCount",
-            NBT_COALS = "Coals",
-            NBT_DIAMONDS_COUNT = "DiamondsCount",
-            NBT_DIAMONDS = "Diamonds",
-            NBT_POWER_STORGE = "getPowerStorge()";
+            NBT_POWER_STORGE = "PowerStorge";
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
@@ -160,9 +156,7 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
             return;
         }
 
-        boolean isFull = output.getCount() >= 64;
-
-        if (isFull) return;
+        if (output.getCount() >= 64) return;
 
         if (entity.getPowerStorge() < Compressor.Entity.POWER_PER_TICK) {
             if (entity.getProgress() > 0) entity.setProgress(entity.getProgress() - 1);
@@ -171,15 +165,18 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
 
         entity.setPowerStorge(entity.getPowerStorge() - Compressor.Entity.POWER_PER_TICK);
         entity.setProgress(entity.getProgress() + 1);
+        input.shrink(1);
 
-        if (entity.getProgress() >= 10) {
+        if (entity.getProgress() == 16) {
             entity.setProgress(0);
             if (output.isEmpty()) {
                 container.setItem(1, new ItemStack(Items.DIAMOND));
             } else {
                 output.grow(1);
             }
-            input.shrink(1);
+        }
+        if (entity.getProgress() > 16) {
+            throw new IllegalStateException("Progress is greater than 16");
         }
     }
 
@@ -212,7 +209,7 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
                 SLOTS_FOR_DOWN = {1};
 
         public static final long MAX_POWER = 2000;
-        public static final long POWER_PER_TICK = 10;
+        public static final long POWER_PER_TICK = 5;
 
         public final SimpleContainer container = new SimpleContainer(2);
 
@@ -245,48 +242,21 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         @Override
         protected void saveAdditional(CompoundTag tag) {
             super.saveAdditional(tag);
-
             if (getProgress() > 0) tag.putInt(NBT_PROGRESS, getProgress());
             if (getPowerStorge() > 0) tag.putLong(NBT_POWER_STORGE, getPowerStorge());
-
-            byte coalsCount = (byte) container.getItem(0).getCount();
-            byte diamondsCount = (byte) container.getItem(1).getCount();
-
-            if (coalsCount > 0) {
-                tag.putByte(NBT_COALS_COUNT, coalsCount);
-                if (container.getItem(0).hasTag())
-                    tag.put(NBT_COALS, container.getItem(0).getTag());
-            }
-
-            if (diamondsCount > 0) {
-                tag.putByte(NBT_DIAMONDS_COUNT, diamondsCount);
-                if (container.getItem(1).hasTag())
-                    tag.put(NBT_DIAMONDS, container.getItem(1).getTag());
-            }
+            var input = container.getItem(0);
+            var output = container.getItem(1);
+            if (!input.isEmpty()) tag.put("Input", input.save(new CompoundTag()));
+            if (!output.isEmpty()) tag.put("Output", output.save(new CompoundTag()));
         }
 
         @Override
         public void load(CompoundTag tag) {
             super.load(tag);
-
             setProgress(tag.contains(NBT_PROGRESS) ? tag.getInt(NBT_PROGRESS) : 0);
             setPowerStorge(tag.contains(NBT_POWER_STORGE) ? tag.getLong(NBT_POWER_STORGE) : 0L);
-
-            if (tag.contains(NBT_COALS_COUNT)) {
-                var stack = new ItemStack(Items.COAL, tag.getByte(NBT_COALS_COUNT));
-                if (tag.contains(NBT_COALS)) stack.setTag(tag.getCompound(NBT_COALS));
-                container.setItem(0, stack);
-            } else {
-                container.setItem(0, ItemStack.EMPTY);
-            }
-
-            if (tag.contains(NBT_DIAMONDS_COUNT)) {
-                var stack = new ItemStack(Items.DIAMOND, tag.getByte(NBT_DIAMONDS_COUNT));
-                if (tag.contains(NBT_DIAMONDS)) stack.setTag(tag.getCompound(NBT_DIAMONDS));
-                container.setItem(1, stack);
-            } else {
-                container.setItem(1, ItemStack.EMPTY);
-            }
+            container.setItem(0, tag.contains("Input") ? ItemStack.of(tag.getCompound("Input")) : ItemStack.EMPTY);
+            container.setItem(1, tag.contains("Output") ? ItemStack.of(tag.getCompound("Output")) : ItemStack.EMPTY);
         }
         //endregion
 

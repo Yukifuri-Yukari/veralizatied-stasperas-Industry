@@ -1,4 +1,5 @@
 {
   "block.vs_industry.compressor": "Compressor",
-  "block.vs_industry.thermoelectic_generator": "Thermoelectric Power Generator"
+  "block.vs_industry.cable": "Cable",
+  "block.vs_industry.thermoelectric_generator": "Thermoelectric Power Generator"
 }

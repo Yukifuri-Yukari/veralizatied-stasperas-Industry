@@ -1,4 +1,5 @@
 {
   "block.vs_industry.compressor": "压缩机",
-  "block.vs_industry.thermoelectic_generator": "热能发电机"
+  "block.vs_industry.cable": "电缆",
+  "block.vs_industry.thermoelectric_generator": "热能发电机"
 }

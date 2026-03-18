@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -13,14 +12,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -96,11 +92,41 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         return InteractionResult.SUCCESS;
     }
 
+    public void onRemove(
+            BlockState oldState, Level level,
+            BlockPos pos, BlockState newState,
+            boolean movedByPiston
+    ) {
+        if (level.isClientSide()) {
+            super.onRemove(oldState, level, pos, newState, movedByPiston);
+            return;
+        }
+        if (oldState.is(newState.getBlock())) {
+            super.onRemove(oldState, level, pos, newState, movedByPiston);
+            return;
+        }
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof ThermoelectricGenerator.Entity entity) {
+            Containers.dropContents(level, pos, entity);
+        }
+        super.onRemove(oldState, level, pos, newState, movedByPiston);
+    }
+
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (entity.getProgress() != 0) return; // Last fuel does not burn completely
+        if (entity.getPower() == Entity.MAX_POWER) return;
+
+        // Convert progress → power: 60 progress = 20 power (3 progress per tick = 1 power)
+        if (entity.getProgress() >= 30) {
+            if (entity.getPower() < Entity.MAX_POWER) {
+                entity.setProgress(entity.getProgress() - 30);
+                entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 10));
+                return;
+            }
+        }
 
         var is = entity.getItem(0);
+
         int burnTime;
 
         if (is.is(ThermoelectricFuelTags.TAG)) {
@@ -110,18 +136,14 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         }
 
         if (burnTime == 0) return; // Do not put unburnable items!
-        if (entity.getProgress() >= Entity.MAX_PROGRESS) {
-            // Progress Bar is full
-            entity.setProgress(Entity.MAX_PROGRESS);
-            return;
-        }
 
         is.shrink(1);
         int gain = burnTime / 20;
         if (entity.getPower() < Entity.MAX_POWER) {
             gain = gain * 2 / 3;
-            entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 30));
+            entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 20));
         }
+
         entity.setProgress(entity.getProgress() + gain);
     }
 
@@ -146,7 +168,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         public static final int[]
                 SLOTS_FOR_UP = new int[]{0};
 
-        public static final int MAX_PROGRESS = 200;
+        public static final int MAX_PROGRESS = 1024;
         public static final int MAX_POWER = 2000000;
 
         public final SimpleContainer container = new SimpleContainer(1);
@@ -192,15 +214,16 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         }
 
         @Override
-        public long powerSupplied() {
-            if (getProgress() > 0) {
-                setProgress(getProgress() - 1);
-                return 100; // 100 Power Per Tick
-            } else if (getPower() > 100) {
-                setPower(getPower() - 100);
-                return 100;
+        public long powerSuppliable() {
+            if (getPower() >= 100) {
+                return 100; // 100 E/T
             }
             return 0;
+        }
+
+        @Override
+        public void powerConsumed(long amount) {
+            setPower(getPower() - amount);
         }
         //endregion
 
@@ -212,7 +235,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
 
         @Override
         protected AbstractContainerMenu createMenu(int containerId, Inventory inventory) {
-            return new ThermoelectricUi(containerId, inventory);
+            return new ThermoelectricUi(containerId, inventory, container, data);
         }
 
         @Override

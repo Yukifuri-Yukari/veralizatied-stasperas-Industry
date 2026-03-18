@@ -2,14 +2,10 @@ package yukifuri.mc.vsindustry.api.level.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 import yukifuri.mc.vsindustry.hook.TickHandler;
-import yukifuri.mc.vsindustry.level.grid.GridManager;
-import yukifuri.mc.vsindustry.level.node.Node;
 
 public abstract class BaseBlockEntity extends BlockEntity {
     public BaseBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
@@ -24,9 +20,11 @@ public abstract class BaseBlockEntity extends BlockEntity {
 
     public long expectedPower() { return 0; }
 
-    public long powerSupplied() { return 0; }
+    public long powerSuppliable() { return 0; }
 
     public void powerAccepted(long power) {}
+
+    public void powerConsumed(long amount) {}
 
     public void scheduleInit() {
         if (level == null || level.isClientSide())

@@ -46,26 +46,34 @@ public class PowerGrid {
     }
 
     public void tick(ServerLevel level) {
-        long totalSupply = 0;
+        long totalSuppliable = 0;
         long totalDemand = 0;
 
         for (GridNode node : nodeSet) {
             var entity = node.getOwner();
-            totalSupply += entity.powerSupplied();
+            totalSuppliable += entity.powerSuppliable();
             totalDemand += entity.expectedPower();
         }
 
-        VSIndustry.LOGGER.info("[PowerGrid] {} Ticked complete. Supply {} Demand {}", this, totalSupply, totalDemand);
-        if (totalDemand == 0) return;
+        VSIndustry.LOGGER.info("[PowerGrid] {} Ticked complete. Supply {} Demand {}", this, totalSuppliable, totalDemand);
+        if (totalDemand == 0 || totalSuppliable == 0) return;
 
-        long ratio = Math.min(1000L, totalSupply * 1000L / totalDemand);
+        /// how much of supply is actually needed (capped at 1000‰)
+        long demandRatio = Math.min(1000L, totalDemand * 1000L / totalSuppliable);
+
+        /// how much of demand can be satisfied (capped at 1000‰)
+        long supplyRatio = Math.min(1000L, totalSuppliable * 1000L / totalDemand);
 
         for (GridNode node : nodeSet) {
             if (!node.isOnline()) continue;
             var entity = node.getOwner();
+            long suppliable = entity.powerSuppliable();
+            if (suppliable > 0) {
+                entity.powerConsumed(suppliable * demandRatio / 1000L);
+            }
             long demand = entity.expectedPower();
             if (demand <= 0) continue;
-            entity.powerAccepted(demand * ratio / 1000L);
+            entity.powerAccepted(demand * supplyRatio / 1000L);
         }
     }
 

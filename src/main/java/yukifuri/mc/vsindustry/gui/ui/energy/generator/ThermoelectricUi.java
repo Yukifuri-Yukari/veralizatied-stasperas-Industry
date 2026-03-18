@@ -7,6 +7,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import yukifuri.mc.vsindustry.gui.api.UI;
 import yukifuri.mc.vsindustry.gui.api.UIType;
 import yukifuri.mc.vsindustry.network.NetworkProcessor;
@@ -14,13 +15,15 @@ import yukifuri.mc.vsindustry.network.packets.SyncGuiDataPacket;
 import yukifuri.mc.vsindustry.util.Power;
 
 public class ThermoelectricUi extends UI<ThermoelectricUi> {
-    public static final Component TITLE = Component.translatable("block.vs_industry.thermoelectic_generator");
+    public static final Component TITLE = Component.translatable("block.vs_industry.thermoelectric_generator");
     public static final UIType<ThermoelectricUi> TYPE = UIType.of(ThermoelectricUi::createUI);
 
     public final Container container;
     public final ContainerData data;
 
     public final Slot fuelSlot;
+
+    private ItemStack lastFuel = ItemStack.EMPTY;
 
     public ThermoelectricUi(int id, Inventory inventory) {
         this(id, inventory, new SimpleContainer(1), new SimpleContainerData(3));
@@ -31,32 +34,36 @@ public class ThermoelectricUi extends UI<ThermoelectricUi> {
         this.container = c;
         this.fuelSlot = new Slot(container, 0, 72, 37);
         this.data = dataC;
+
+        init();
     }
 
     @Override
     public void init() {
         addInventorySlots(inv);
-        addSlots(fuelSlot);
+        addSlot(fuelSlot);
+        addDataSlots(data);
     }
 
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
+        ItemStack fuel = fuelSlot.getItem();
+
+        if (ItemStack.matches(fuel, lastFuel))
+            return;
+
+        lastFuel = fuel.copy();
         NetworkProcessor.getInstance().sendToClient(
-                new SyncGuiDataPacket(containerId, buf -> {
-                    buf.writeItem(fuelSlot.getItem());
-                    buf.writeInt(getProgress());
-                    buf.writeLong(getPower());
-                }), inv.player
+                new SyncGuiDataPacket(containerId, buf -> buf.writeItem(fuelSlot.getItem())), inv.player
         );
     }
+
 
     @Override
     public void syncDataOnClient(SyncGuiDataPacket packet) {
         var payload = packet.getPayload();
         fuelSlot.set(payload.readItem());
-        setProgress(payload.readInt());
-        setPower(payload.readLong());
     }
 
     public int getProgress() {
@@ -65,14 +72,6 @@ public class ThermoelectricUi extends UI<ThermoelectricUi> {
 
     public long getPower() {
         return Power.from(data, 1);
-    }
-
-    public void setProgress(int progress) {
-        data.set(0, progress);
-    }
-
-    public void setPower(long power) {
-        Power.to(data, power, 1);
     }
 
     public static ThermoelectricUi createUI(int syncId, Inventory inventory) {
