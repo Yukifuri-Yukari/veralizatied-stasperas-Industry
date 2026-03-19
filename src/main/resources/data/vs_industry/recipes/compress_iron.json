@@ -1,0 +1,6 @@
+{
+  "type": "vs_industry:compressing",
+  "ingredient": { "item": "minecraft:iron_ingot" },
+  "result": { "item": "vs_industry:iron_plate" },
+  "duration": 20
+}

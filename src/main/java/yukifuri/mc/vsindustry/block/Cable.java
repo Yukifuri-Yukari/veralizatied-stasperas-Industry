@@ -26,8 +26,7 @@ import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
-import yukifuri.mc.vsindustry.level.node.GridNode;
-import yukifuri.mc.vsindustry.level.node.Node;
+import yukifuri.mc.vsindustry.logic.level.node.GridNode;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 
 @MethodsReturnNonnullByDefault

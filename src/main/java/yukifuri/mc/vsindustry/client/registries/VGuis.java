@@ -5,11 +5,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import yukifuri.mc.vsindustry.client.gui.CompressorScreen;
 import yukifuri.mc.vsindustry.client.gui.energy.generator.ThermoelectricScreen;
-import yukifuri.mc.vsindustry.gui.api.UI;
-import yukifuri.mc.vsindustry.gui.api.UIScreen;
-import yukifuri.mc.vsindustry.gui.api.UIType;
-import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
-import yukifuri.mc.vsindustry.gui.ui.energy.generator.ThermoelectricUi;
+import yukifuri.mc.vsindustry.api.gui.UI;
+import yukifuri.mc.vsindustry.api.gui.UIScreen;
+import yukifuri.mc.vsindustry.api.gui.UIType;
+import yukifuri.mc.vsindustry.ui.CompressorUi;
+import yukifuri.mc.vsindustry.ui.energy.generator.ThermoelectricUi;
 
 public class VGuis {
     public static void register() {

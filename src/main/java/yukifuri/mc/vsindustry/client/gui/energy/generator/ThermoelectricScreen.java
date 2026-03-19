@@ -3,8 +3,8 @@ package yukifuri.mc.vsindustry.client.gui.energy.generator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import yukifuri.mc.vsindustry.gui.api.UIScreen;
-import yukifuri.mc.vsindustry.gui.ui.energy.generator.ThermoelectricUi;
+import yukifuri.mc.vsindustry.api.gui.UIScreen;
+import yukifuri.mc.vsindustry.ui.energy.generator.ThermoelectricUi;
 
 import static yukifuri.mc.vsindustry.block.energy.generator.ThermoelectricGenerator.Entity.MAX_POWER;
 import static yukifuri.mc.vsindustry.block.energy.generator.ThermoelectricGenerator.Entity.MAX_PROGRESS;

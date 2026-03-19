@@ -21,26 +21,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
-import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
-import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
+import yukifuri.mc.vsindustry.api.level.blockentity.*;
 import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
-import yukifuri.mc.vsindustry.gui.ui.energy.generator.ThermoelectricUi;
-import yukifuri.mc.vsindustry.level.node.GridNode;
+import yukifuri.mc.vsindustry.ui.energy.generator.ThermoelectricUi;
+import yukifuri.mc.vsindustry.logic.level.node.GridNode;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.tags.ThermoelectricFuelTags;
 import yukifuri.mc.vsindustry.util.Power;
 
-import static yukifuri.mc.vsindustry.gui.api.UI.SLOTS_FOR_NOTHING;
+import static yukifuri.mc.vsindustry.api.gui.UI.SLOTS_FOR_NOTHING;
 
 @MethodsReturnNonnullByDefault
 public class ThermoelectricGenerator extends SimpleBlockWithEntity<ThermoelectricGenerator.Entity> implements WorldlyContainerHolder, Connectable {
@@ -116,11 +112,11 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
     public void tick(Level level, BlockPos pos, BlockState state, Entity entity) {
         if (entity.getPower() == Entity.MAX_POWER) return;
 
-        // Convert progress → power: 60 progress = 20 power (3 progress per tick = 1 power)
-        if (entity.getProgress() >= 30) {
+        // Convert progress → power: 60 progress = 100 power
+        if (entity.getProgress() >= 60) {
             if (entity.getPower() < Entity.MAX_POWER) {
-                entity.setProgress(entity.getProgress() - 30);
-                entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 10));
+                entity.setProgress(entity.getProgress() - 60);
+                entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 100));
                 return;
             }
         }
@@ -138,7 +134,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         if (burnTime == 0) return; // Do not put unburnable items!
 
         is.shrink(1);
-        int gain = burnTime / 20;
+        int gain = burnTime / 10;
         if (entity.getPower() < Entity.MAX_POWER) {
             gain = gain * 2 / 3;
             entity.setPower(Math.min(Entity.MAX_POWER, entity.getPower() + 20));
@@ -169,7 +165,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
                 SLOTS_FOR_UP = new int[]{0};
 
         public static final int MAX_PROGRESS = 1024;
-        public static final int MAX_POWER = 2000000;
+        public static final int MAX_POWER = 10000;
 
         public final SimpleContainer container = new SimpleContainer(1);
         public final ContainerData data = new SimpleContainerData(3);
@@ -215,10 +211,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
 
         @Override
         public long powerSuppliable() {
-            if (getPower() >= 100) {
-                return 100; // 100 E/T
-            }
-            return 0;
+            return getPower();
         }
 
         @Override

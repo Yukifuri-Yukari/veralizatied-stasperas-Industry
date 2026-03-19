@@ -15,8 +15,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import yukifuri.mc.vsindustry.logic.recipe.CompressorRecipe;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -35,12 +35,12 @@ import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
 import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
-import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
-import yukifuri.mc.vsindustry.level.node.GridNode;
+import yukifuri.mc.vsindustry.ui.CompressorUi;
+import yukifuri.mc.vsindustry.logic.level.node.GridNode;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.util.Power;
 
-import static yukifuri.mc.vsindustry.gui.api.UI.SLOTS_FOR_NOTHING;
+import static yukifuri.mc.vsindustry.api.gui.UI.SLOTS_FOR_NOTHING;
 
 @MethodsReturnNonnullByDefault
 public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> implements WorldlyContainerHolder, Connectable {
@@ -150,33 +150,45 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         var input = container.getItem(0);
         var output = container.getItem(1);
 
-        if (!input.is(Items.COAL)) {
-            if (entity.getProgress() > 0)
-                entity.setProgress(entity.getProgress() - 1);
-            return;
-        }
+        var recipe = level.getRecipeManager()
+                .getRecipeFor(CompressorRecipe.TYPE, entity.container, level)
+                .orElse(null);
 
-        if (output.getCount() >= 64) return;
-
-        if (entity.getPowerStorge() < Compressor.Entity.POWER_PER_TICK) {
+        if (recipe == null) {
             if (entity.getProgress() > 0) entity.setProgress(entity.getProgress() - 1);
             return;
         }
 
-        entity.setPowerStorge(entity.getPowerStorge() - Compressor.Entity.POWER_PER_TICK);
-        entity.setProgress(entity.getProgress() + 1);
-        input.shrink(1);
+        entity.setRecipeDuration(recipe.getDuration());
 
-        if (entity.getProgress() == 16) {
-            entity.setProgress(0);
-            if (output.isEmpty()) {
-                container.setItem(1, new ItemStack(Items.DIAMOND));
-            } else {
-                output.grow(1);
-            }
+        // Check output capacity
+        var result = recipe.getResultItem(level.registryAccess());
+        if (!output.isEmpty()) {
+            if (!ItemStack.isSameItemSameTags(output, result)) return;
+            if (output.getCount() + result.getCount() > output.getMaxStackSize()) return;
         }
-        if (entity.getProgress() > 16) {
-            throw new IllegalStateException("Progress is greater than 16");
+
+        if (entity.getPowerStorge() < Entity.POWER_PER_TICK) {
+            if (entity.getProgress() > 0) entity.setProgress(entity.getProgress() - 1);
+            return;
+        }
+
+        if (recipe != entity.lastRecipe) {
+            entity.setProgress(0);
+            entity.lastRecipe = recipe;
+        }
+
+        entity.setPowerStorge(entity.getPowerStorge() - Entity.POWER_PER_TICK);
+        entity.setProgress(entity.getProgress() + 1);
+
+        if (entity.getProgress() >= recipe.getDuration()) {
+            entity.setProgress(0);
+            input.shrink(recipe.getConsumes());
+            if (output.isEmpty()) {
+                container.setItem(1, result.copy());
+            } else {
+                output.grow(result.getCount());
+            }
         }
     }
 
@@ -213,7 +225,10 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
 
         public final SimpleContainer container = new SimpleContainer(2);
 
-        public final ContainerData syncData = new SimpleContainerData(3);
+        // slots: 0=progress, 1=powerStorge high, 2=powerStorge low, 3=recipeDuration
+        public final ContainerData syncData = new SimpleContainerData(4);
+
+        public CompressorRecipe lastRecipe = null;
 
         public Entity(BlockPos pos, BlockState state) {
             this(pos, state, 0, 0L);
@@ -314,6 +329,10 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
 
         public void setPowerStorge(long powerStorge) {
             Power.to(syncData, powerStorge, 1);
+        }
+
+        public void setRecipeDuration(int duration) {
+            syncData.set(3, duration);
         }
         //endregion
 

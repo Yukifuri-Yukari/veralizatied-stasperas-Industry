@@ -1,6 +1,6 @@
 package yukifuri.mc.vsindustry.registries;
 
-import yukifuri.mc.vsindustry.hook.TickHandler;
+import yukifuri.mc.vsindustry.logic.hook.TickHandler;
 
 public class VHooks {
     public static void register() {

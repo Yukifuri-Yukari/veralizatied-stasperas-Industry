@@ -2,10 +2,10 @@ package yukifuri.mc.vsindustry.registries;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import yukifuri.mc.vsindustry.gui.api.UI;
-import yukifuri.mc.vsindustry.gui.api.UIType;
-import yukifuri.mc.vsindustry.gui.ui.CompressorUi;
-import yukifuri.mc.vsindustry.gui.ui.energy.generator.ThermoelectricUi;
+import yukifuri.mc.vsindustry.api.gui.UI;
+import yukifuri.mc.vsindustry.api.gui.UIType;
+import yukifuri.mc.vsindustry.ui.CompressorUi;
+import yukifuri.mc.vsindustry.ui.energy.generator.ThermoelectricUi;
 
 import static yukifuri.mc.vsindustry.VSIndustry.MOD_ID;
 

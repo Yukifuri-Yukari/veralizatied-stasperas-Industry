@@ -5,10 +5,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import yukifuri.mc.vsindustry.client.registries.VGuis;
-import yukifuri.mc.vsindustry.network.NetworkProcessor;
-import yukifuri.mc.vsindustry.network.packets.VPacket;
-
-import static yukifuri.mc.vsindustry.VSIndustry.LOGGER;
+import yukifuri.mc.vsindustry.logic.network.NetworkProcessor;
+import yukifuri.mc.vsindustry.logic.network.packets.VPacket;
 
 @Environment(EnvType.CLIENT)
 public class VSIndustryClient implements ClientModInitializer {

@@ -1,0 +1,7 @@
+{
+  "type": "vs_industry:compressing",
+  "ingredient": { "item": "minecraft:coal" },
+  "result": { "item": "minecraft:diamond" },
+  "duration": 200,
+  "consumes": 16
+}

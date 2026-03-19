@@ -4,13 +4,12 @@ import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import yukifuri.mc.vsindustry.network.NetworkProcessor;
-import yukifuri.mc.vsindustry.network.packets.VPacket;
+import yukifuri.mc.vsindustry.logic.network.NetworkProcessor;
+import yukifuri.mc.vsindustry.logic.network.packets.VPacket;
 import yukifuri.mc.vsindustry.registries.*;
 
 public class VSIndustry implements ModInitializer {
@@ -27,6 +26,7 @@ public class VSIndustry implements ModInitializer {
 		VGuis.register();
 		VItems.register();
 		VBlocks.register();
+		VRecipes.register();
 		VTabs.register();
 	}
 
