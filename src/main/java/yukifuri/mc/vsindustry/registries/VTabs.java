@@ -7,6 +7,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Items;
 import yukifuri.mc.vsindustry.VSIndustry;
+import yukifuri.mc.vsindustry.item.material.Materials;
+import yukifuri.mc.vsindustry.item.tool.Tools;
 
 public class VTabs {
     public static final CreativeModeTab VSI_TAB = FabricItemGroup.builder()
@@ -15,7 +17,10 @@ public class VTabs {
             .displayItems((param, output) -> {
                 output.accept(VBlocks.COMPRESSOR.asItem());
                 output.accept(VBlocks.CABLE.asItem());
+                output.accept(VBlocks.ITEM_PIPE.asItem());
                 output.accept(VBlocks.THERMOELECTRIC_GENERATOR.asItem());
+                output.accept(Materials.IRON_PLATE);
+                output.accept(Tools.WRENCH);
             })
             .build();
 
