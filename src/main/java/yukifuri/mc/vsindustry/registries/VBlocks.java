@@ -10,16 +10,19 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import yukifuri.mc.vsindustry.VSIndustry;
 import yukifuri.mc.vsindustry.block.Cable;
 import yukifuri.mc.vsindustry.block.Compressor;
+import yukifuri.mc.vsindustry.block.ItemPipe;
 import yukifuri.mc.vsindustry.block.energy.generator.ThermoelectricGenerator;
 
 public class VBlocks {
     public static final Compressor COMPRESSOR = new Compressor();
     public static final Cable CABLE = new Cable();
+    public static final ItemPipe ITEM_PIPE = new ItemPipe();
     public static final ThermoelectricGenerator THERMOELECTRIC_GENERATOR = new ThermoelectricGenerator();
 
     public static void register() {
         register(COMPRESSOR, Compressor.Entity.TYPE, Items.COMPRESSOR, "compressor");
         register(CABLE, Cable.Entity.TYPE, Items.CABLE, "cable");
+        register(ITEM_PIPE, ItemPipe.Entity.TYPE, Items.ITEM_PIPE, "item_pipe");
         register(
                 THERMOELECTRIC_GENERATOR, ThermoelectricGenerator.Entity.TYPE,
                 Items.THERMOELECTRIC_GENERATOR, "thermoelectric_generator"
@@ -53,6 +56,7 @@ public class VBlocks {
     static class Items {
         public static final BlockItem COMPRESSOR = simple(VBlocks.COMPRESSOR);
         public static final BlockItem CABLE = simple(VBlocks.CABLE);
+        public static final BlockItem ITEM_PIPE = simple(VBlocks.ITEM_PIPE);
         public static final BlockItem THERMOELECTRIC_GENERATOR = simple(VBlocks.THERMOELECTRIC_GENERATOR);
 
         static BlockItem simple(Block block) {

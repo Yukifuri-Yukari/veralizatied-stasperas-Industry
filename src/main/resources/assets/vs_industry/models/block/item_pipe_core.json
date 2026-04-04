@@ -1,0 +1,7 @@
+{
+  "parent": "vs_industry:block/base_pipe_core",
+  "textures": {
+    "texture": "minecraft:block/gold_block",
+    "particle": "minecraft:block/gold_block"
+  }
+}
