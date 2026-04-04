@@ -16,6 +16,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import yukifuri.mc.vsindustry.logic.level.network.power.PowerNetworkNode;
 import yukifuri.mc.vsindustry.logic.recipe.CompressorRecipe;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -32,11 +33,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
-import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
+import yukifuri.mc.vsindustry.logic.level.network.power.DefaultPowerNetworkNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
 import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
 import yukifuri.mc.vsindustry.ui.CompressorUi;
-import yukifuri.mc.vsindustry.logic.level.node.GridNode;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.util.Power;
 
@@ -211,7 +211,7 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         return (Compressor.Entity) level.getBlockEntity(pos);
     }
 
-    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, DefaultNode {
+    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, DefaultPowerNetworkNode {
         public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
                 .create(Entity::new, VBlocks.COMPRESSOR)
                 .build();
@@ -337,12 +337,11 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         //endregion
 
         //region Grid
-        private GridNode gridNode;
-
+        private PowerNetworkNode node;
         @Override
-        public GridNode getGridNode() {
-            if (gridNode == null) gridNode = GridNode.of(this);
-            return gridNode;
+        public PowerNetworkNode getNode() {
+            if (node == null) node = PowerNetworkNode.of(this);
+            return node;
         }
 
         protected void onFirstTick(ServerLevel level) {
@@ -356,6 +355,7 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         public void onChunkUnload() {
             defaultOnChunkUnload();
         }
+
         //endregion
     }
 }

@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -25,9 +24,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
-import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
-import yukifuri.mc.vsindustry.logic.level.node.GridNode;
+import yukifuri.mc.vsindustry.logic.level.network.base.ConnectableType;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 
 @MethodsReturnNonnullByDefault
@@ -130,7 +128,13 @@ public class ItemPipe extends SimpleBlockWithEntity<ItemPipe.Entity> implements 
 
     private boolean connectable(LevelAccessor level, BlockPos neighborPos) {
         BlockState state = level.getBlockState(neighborPos);
-        return state.getBlock() instanceof Connectable;
+        return state.getBlock() instanceof Connectable connectable &&
+                connectable.isConnectable(ConnectableType.Item);
+    }
+
+    @Override
+    public boolean isConnectable(ConnectableType type) {
+        return type == ConnectableType.Item;
     }
     //endregion
 

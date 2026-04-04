@@ -30,14 +30,12 @@ import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseContainerBlockEntity;
 import yukifuri.mc.vsindustry.api.level.blockentity.*;
 import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
+import yukifuri.mc.vsindustry.logic.level.network.power.DefaultPowerNetworkNode;
+import yukifuri.mc.vsindustry.logic.level.network.power.PowerNetworkNode;
 import yukifuri.mc.vsindustry.ui.energy.generator.ThermoelectricUi;
-import yukifuri.mc.vsindustry.logic.level.node.GridNode;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.tags.ThermoelectricFuelTags;
 import yukifuri.mc.vsindustry.util.Power;
-
-import java.util.Arrays;
-import java.util.Comparator;
 
 import static yukifuri.mc.vsindustry.api.gui.UI.SLOTS_FOR_NOTHING;
 
@@ -159,7 +157,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
                 (level1, pos, state1, entity) -> tick(level1, pos, state1, (Entity) entity);
     }
 
-    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, DefaultNode {
+    public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, DefaultPowerNetworkNode {
         public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
                 .create(Entity::new, VBlocks.THERMOELECTRIC_GENERATOR)
                 .build();
@@ -278,12 +276,11 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         //endregion
 
         //region Grid
-        private GridNode gridNode;
-
+        private PowerNetworkNode node;
         @Override
-        public GridNode getGridNode() {
-            if (gridNode == null) gridNode = GridNode.of(this);
-            return gridNode;
+        public PowerNetworkNode getNode() {
+            if (node == null) node = PowerNetworkNode.of(this);
+            return node;
         }
 
         protected void onFirstTick(ServerLevel level) {

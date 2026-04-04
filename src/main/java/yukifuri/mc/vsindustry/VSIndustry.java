@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import yukifuri.mc.vsindustry.logic.level.network.power.PowerNetworkManager;
 import yukifuri.mc.vsindustry.logic.network.NetworkProcessor;
 import yukifuri.mc.vsindustry.logic.network.packets.VPacket;
 import yukifuri.mc.vsindustry.registries.*;
@@ -22,12 +23,19 @@ public class VSIndustry implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ServerLifecycleEvents.SERVER_STARTING.register(VSIndustry::onServerStarting);
+		ServerLifecycleEvents.SERVER_STOPPING.register(VSIndustry::onServerStopping);
 		VHooks.register();
 		VGuis.register();
 		VItems.register();
 		VBlocks.register();
 		VRecipes.register();
 		VTabs.register();
+	}
+
+	private static void onServerStopping(MinecraftServer server) {
+		VSIndustry.server = null;
+		NetworkProcessor.Holder.instance = null;
+		PowerNetworkManager.MANAGERS.clear();
 	}
 
 	private static void onServerStarting(MinecraftServer s) {

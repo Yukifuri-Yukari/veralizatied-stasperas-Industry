@@ -24,9 +24,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import yukifuri.mc.vsindustry.api.level.block.Connectable;
 import yukifuri.mc.vsindustry.api.level.blockentity.BaseBlockEntity;
-import yukifuri.mc.vsindustry.api.level.blockentity.DefaultNode;
+import yukifuri.mc.vsindustry.logic.level.network.base.ConnectableType;
+import yukifuri.mc.vsindustry.logic.level.network.power.DefaultPowerNetworkNode;
 import yukifuri.mc.vsindustry.api.level.blockentity.SimpleBlockWithEntity;
-import yukifuri.mc.vsindustry.logic.level.node.GridNode;
+import yukifuri.mc.vsindustry.logic.level.network.power.PowerNetworkNode;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 
 @MethodsReturnNonnullByDefault
@@ -129,7 +130,13 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
 
     private boolean connectable(LevelAccessor level, BlockPos neighborPos) {
         BlockState state = level.getBlockState(neighborPos);
-        return state.getBlock() instanceof Connectable;
+        return state.getBlock() instanceof Connectable connectable &&
+                connectable.isConnectable(ConnectableType.Power);
+    }
+
+    @Override
+    public boolean isConnectable(ConnectableType type) {
+        return type == ConnectableType.Power;
     }
     //endregion
 
@@ -147,7 +154,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, Entity entity) { }
 
-    public static class Entity extends BaseBlockEntity implements DefaultNode {
+    public static class Entity extends BaseBlockEntity implements DefaultPowerNetworkNode {
         public static final BlockEntityType<Entity> TYPE = FabricBlockEntityTypeBuilder
                 .create(Entity::new, VBlocks.CABLE)
                 .build();
@@ -156,13 +163,12 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
             super(TYPE, pos, blockState);
         }
 
-        private GridNode gridNode;
+        private PowerNetworkNode node;
         @Override
-        public GridNode getGridNode() {
-            if (gridNode == null) gridNode = GridNode.of(this);
-            return gridNode;
+        public PowerNetworkNode getNode() {
+            if (node == null) node = PowerNetworkNode.of(this);
+            return node;
         }
-
 
         protected void onFirstTick(ServerLevel level) { defaultOnFirstTick(level); }
         protected void onRemoved(ServerLevel level) { defaultOnRemoved(level); }
@@ -170,7 +176,7 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
 
         @Override
         public String toString() {
-            return getGridNode().toString();
+            return getNode().toString();
         }
     }
 }
