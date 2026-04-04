@@ -36,6 +36,9 @@ import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.tags.ThermoelectricFuelTags;
 import yukifuri.mc.vsindustry.util.Power;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 import static yukifuri.mc.vsindustry.api.gui.UI.SLOTS_FOR_NOTHING;
 
 @MethodsReturnNonnullByDefault
@@ -211,7 +214,8 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
 
         @Override
         public long powerSuppliable() {
-            return getPower();
+            var power = getPower();
+            return power >= 1000 ? 1000 : power;
         }
 
         @Override
