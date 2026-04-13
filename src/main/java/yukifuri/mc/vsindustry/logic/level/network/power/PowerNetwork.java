@@ -10,24 +10,25 @@ public class PowerNetwork extends BaseNetwork<PowerNetworkNode> {
         long totalDemand = 0;
 
         for (PowerNetworkNode node : nodeSet) {
-            if (!node.isOnline()) continue;
             var entity = node.getOwner();
             totalSuppliable += entity.powerSuppliable();
             totalDemand += entity.expectedPower();
         }
 
         if (totalDemand == 0 || totalSuppliable == 0) return;
-        VSIndustry.LOGGER.info("[Network] {} Ticked complete. Supply {} Demand {}", this, totalSuppliable, totalDemand);
 
         /// how much of supply is actually needed (capped at 1000‰)
         long demandRatio = Math.min(1000L, totalDemand * 1000L / totalSuppliable);
-
         /// how much of demand can be satisfied (capped at 1000‰)
         long supplyRatio = Math.min(1000L, totalSuppliable * 1000L / totalDemand);
 
+        VSIndustry.LOGGER.info("[Network] {} Supply {} Demand {}, SupplyRatio {}, DemandRatio {}",
+                this, totalSuppliable, totalDemand, supplyRatio, demandRatio
+        );
+
         for (PowerNetworkNode node : nodeSet) {
-            if (!node.isOnline()) continue;
             var entity = node.getOwner();
+            if (!node.isOnline() || !entity.isLoaded()) continue;
             long suppliable = entity.powerSuppliable();
             if (suppliable > 0) {
                 entity.powerConsumed(suppliable * demandRatio / 1000L);
@@ -39,7 +40,7 @@ public class PowerNetwork extends BaseNetwork<PowerNetworkNode> {
     }
 
     @Override
-    protected String getNetworkName() {
+    public String getNetworkName() {
         return "Power";
     }
 }

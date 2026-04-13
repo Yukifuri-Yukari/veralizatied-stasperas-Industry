@@ -94,7 +94,8 @@ public abstract class BaseNetworkManager<
         Node existing = nodesByPos.get(node.getPos());
         if (existing != null) {
             existing.updateOwner(node.getOwner());
-            existing.online();
+            // 只有区块确实已加载时才 online（防止 firstTick 在 onceTicker offline 之后才执行的竞态）
+            if (node.getOwner().isLoaded()) existing.online();
             return;
         }
 
@@ -219,8 +220,8 @@ public abstract class BaseNetworkManager<
 
     private void tick(Level _unused) {
         for (var network : List.copyOf(networks)) {
-            // 跳过全员离线的网络（如离开 VS 模拟范围时）
-            if (network.nodes().stream().noneMatch(BaseNetworkNode::isOnline)) continue;
+            // 跳过全员不在已加载区块内的网络
+            if (network.nodes().stream().noneMatch(n -> n.getOwner().isLoaded())) continue;
             network.tick(level);
         }
     }

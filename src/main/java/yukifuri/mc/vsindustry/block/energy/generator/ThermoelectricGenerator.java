@@ -292,7 +292,7 @@ public class ThermoelectricGenerator extends SimpleBlockWithEntity<Thermoelectri
         }
 
         public void onChunkUnload() {
-            defaultOnChunkUnload();
+            if (level instanceof ServerLevel sl) defaultOnChunkUnload(sl);
         }
         //endregion
     }

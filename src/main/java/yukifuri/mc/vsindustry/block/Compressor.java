@@ -16,6 +16,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import yukifuri.mc.vsindustry.logic.level.network.base.ConnectableType;
 import yukifuri.mc.vsindustry.logic.level.network.power.PowerNetworkNode;
 import yukifuri.mc.vsindustry.logic.recipe.CompressorRecipe;
 import net.minecraft.world.level.BlockGetter;
@@ -39,6 +40,8 @@ import yukifuri.mc.vsindustry.api.level.container.ProvidedWorldlyContainer;
 import yukifuri.mc.vsindustry.ui.CompressorUi;
 import yukifuri.mc.vsindustry.registries.VBlocks;
 import yukifuri.mc.vsindustry.util.Power;
+
+import java.util.Objects;
 
 import static yukifuri.mc.vsindustry.api.gui.UI.SLOTS_FOR_NOTHING;
 
@@ -208,7 +211,12 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
 
     @Override
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        return (Compressor.Entity) level.getBlockEntity(pos);
+        return (Compressor.Entity) Objects.requireNonNull(level.getBlockEntity(pos));
+    }
+
+    @Override
+    public boolean isConnectable(ConnectableType type) {
+        return true;
     }
 
     public static class Entity extends BaseContainerBlockEntity implements ProvidedWorldlyContainer, DefaultPowerNetworkNode {
@@ -353,9 +361,8 @@ public class Compressor extends SimpleBlockWithEntity<Compressor.Entity> impleme
         }
 
         public void onChunkUnload() {
-            defaultOnChunkUnload();
+            if (level instanceof ServerLevel sl) defaultOnChunkUnload(sl);
         }
-
         //endregion
     }
 }

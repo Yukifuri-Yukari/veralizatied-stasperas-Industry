@@ -19,6 +19,7 @@ public class VTabs {
                 output.accept(VBlocks.CABLE.asItem());
                 output.accept(VBlocks.ITEM_PIPE.asItem());
                 output.accept(VBlocks.THERMOELECTRIC_GENERATOR.asItem());
+                output.accept(VBlocks.MINE_EXCAVATOR.asItem());
                 output.accept(Materials.IRON_PLATE);
                 output.accept(Tools.WRENCH);
             })

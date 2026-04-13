@@ -133,11 +133,6 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
         return state.getBlock() instanceof Connectable connectable &&
                 connectable.isConnectable(ConnectableType.Power);
     }
-
-    @Override
-    public boolean isConnectable(ConnectableType type) {
-        return type == ConnectableType.Power;
-    }
     //endregion
 
 
@@ -172,7 +167,9 @@ public class Cable extends SimpleBlockWithEntity<Cable.Entity> implements Connec
 
         protected void onFirstTick(ServerLevel level) { defaultOnFirstTick(level); }
         protected void onRemoved(ServerLevel level) { defaultOnRemoved(level); }
-        public void onChunkUnload() { defaultOnChunkUnload(); }
+        public void onChunkUnload() {
+            if (level instanceof ServerLevel sl) defaultOnChunkUnload(sl);
+        }
 
         @Override
         public String toString() {

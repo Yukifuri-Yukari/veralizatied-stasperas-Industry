@@ -10,6 +10,6 @@ import yukifuri.mc.vsindustry.logic.level.network.base.ConnectableType;
  */
 public interface Connectable {
     default boolean isConnectable(ConnectableType type) {
-        return true;
+        return type == ConnectableType.Power;
     }
 }
